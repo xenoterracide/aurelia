@@ -1,4 +1,5 @@
-import { ColorOptions, DI, IConsoleLike, ILogger, LoggerConfiguration, LogLevel } from '@aurelia/kernel';
+import { Done } from 'mocha';
+import { ColorOptions, DI, IConsoleLike, IContainer, ILogger, LoggerConfiguration, LogLevel } from '@aurelia/kernel';
 import { assert, eachCartesianJoin } from '@aurelia/testing';
 
 class ConsoleMock implements IConsoleLike {
@@ -25,55 +26,57 @@ class ConsoleMock implements IConsoleLike {
   }
 }
 
-const levels = [
+const levels: [LogLevel, string, string, string][] = [
   [
     LogLevel.trace,
     'trace',
     'debug',
     'TRC',
-  ] as const,
+  ],
   [
     LogLevel.debug,
     'debug',
     'debug',
     'DBG',
-  ] as const,
+  ],
   [
     LogLevel.info,
     'info',
     'info',
     'INF',
-  ] as const,
+  ],
   [
     LogLevel.warn,
     'warn',
     'warn',
     'WRN',
-  ] as const,
+  ],
   [
     LogLevel.error,
     'error',
     'error',
     'ERR',
-  ] as const,
+  ],
   [
     LogLevel.fatal,
     'fatal',
     'error',
     'FTL',
-  ] as const,
+  ],
   [
     LogLevel.none,
     'none',
     '',
     '',
-  ] as const,
-] as const;
+  ],
+];
 
 describe('Logger', function () {
-  function createFixture(level: LogLevel, colorOpts: ColorOptions, scopeTo: string[]) {
+  function createFixture<M extends IConsoleLike & {calls: [keyof ConsoleMock, unknown[]][]}>(
+    mock: M, level: LogLevel, colorOpts: ColorOptions, scopeTo: string[]
+  ): {sut: ILogger; mock: M; container: IContainer} {
+
     const container = DI.createContainer();
-    const mock = new ConsoleMock();
     container.register(LoggerConfiguration.create(mock, level, colorOpts));
 
     let sut = container.get(ILogger);
@@ -132,7 +135,7 @@ describe('Logger', function () {
       describe(`with configured level=${configName}, colors=${colorOpts}, msgOrGetMsg=${msgOrGetMsg}, optionalParams=${optionalParams}, scopeTo=${scopeTo}`, function () {
         if (methodLevel >= configLevel) {
           it(`logs ${loggerMethodName}`, function () {
-            const { sut, mock } = createFixture(configLevel, colorOpts, scopeTo);
+            const { sut, mock } = createFixture(new ConsoleMock(), configLevel, colorOpts, scopeTo);
 
             sut[loggerMethodName](msgOrGetMsg, ...optionalParams);
 
@@ -148,7 +151,7 @@ describe('Logger', function () {
           });
         } else {
           it(`does NOT log ${loggerMethodName}`, function () {
-            const { sut, mock } = createFixture(configLevel, colorOpts, scopeTo);
+            const { sut, mock } = createFixture(new ConsoleMock(), configLevel, colorOpts, scopeTo);
 
             sut[loggerMethodName](msgOrGetMsg, ...optionalParams);
 
@@ -156,7 +159,7 @@ describe('Logger', function () {
           });
 
           it(`can change the level after instantiation`, function () {
-            const { sut, mock } = createFixture(configLevel, colorOpts, scopeTo);
+            const { sut, mock } = createFixture(new ConsoleMock(), configLevel, colorOpts, scopeTo);
 
             sut.config.level = methodLevel;
 
@@ -176,4 +179,71 @@ describe('Logger', function () {
       });
     }
   );
+
+  describe('Promise', function () {
+
+    class AsyncConsoleMock implements IConsoleLike {
+
+      public constructor(
+        private readonly level: [LogLevel, string, string, string],
+        private readonly args: unknown[],
+        private readonly done: Done) {
+      }
+      public readonly calls: [keyof ConsoleMock, unknown[]][] = [];
+
+      private tester(method: string, message: string, ...args: unknown[]): void {
+        const timestampRE = `\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z`;
+
+        assert.strictEqual(method, this.level[2], `method`);
+        assert.match(message, new RegExp(`${timestampRE} \\[${this.level[3]}\\] test`));
+        assert.deepStrictEqual(args, this.args);
+        this.done();
+      }
+
+      public debug(message: string, ...optionalParams: unknown[]): void {
+        this.tester('debug', message, optionalParams);
+      }
+      public info(message: string, ...optionalParams: unknown[]): void {
+        this.tester('info', message, optionalParams);
+      }
+      public warn(message: string, ...optionalParams: unknown[]): void {
+        this.tester('debug', message, optionalParams);
+      }
+      public error(message: string, ...optionalParams: unknown[]): void {
+        this.tester('error', message, optionalParams);
+      }
+
+    }
+
+    for (const level of levels) {
+      if (level[0] === LogLevel.none) continue;
+      describe('resolve', function () {
+        // eslint-disable-next-line mocha/handle-done-callback
+        it(`level=${level[1]} no params`, function (done: Done) {
+          const {sut} = createFixture(new AsyncConsoleMock(level, [], done), level[0], ColorOptions.noColors, []);
+          sut[level[1]](async () => Promise.resolve('test'));
+        });
+
+        // eslint-disable-next-line mocha/handle-done-callback
+        it(`level=${level[1]} params`, function (done: Done) {
+          const {sut} = createFixture(new AsyncConsoleMock(level, ['a'], done), level[0], ColorOptions.noColors, []);
+          sut[level[1]](async () => Promise.resolve('test'), 'a');
+        });
+      });
+
+      describe('reject', function () {
+        // eslint-disable-next-line mocha/handle-done-callback
+        it(`level=${level[1]} no params`, function (done: Done) {
+          const {sut} = createFixture(new AsyncConsoleMock(level, ['a'], done), level[0], ColorOptions.noColors, []);
+          sut[level[1]](async () => Promise.reject(new Error('my error')));
+        });
+
+        // eslint-disable-next-line mocha/handle-done-callback
+        it(`level=${level[1]} no params`, function (done: Done) {
+          const {sut} = createFixture(new AsyncConsoleMock(level, ['a'], done), level[0], ColorOptions.noColors, []);
+          sut[level[1]](async () => Promise.reject('test'));
+        });
+      });
+    }
+  });
 });

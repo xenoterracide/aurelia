@@ -513,10 +513,13 @@ export class DefaultLogger implements ILogger {
     const log = (level: LogLevel, msgOrGetMsg: unknown, optionalParams: unknown[]): void => {
       const message = typeof msgOrGetMsg === 'function' ? msgOrGetMsg() : msgOrGetMsg;
       if (message instanceof Promise) {
-        message.then((msg) => emit(factory.createLogEvent(this, level, msg, optionalParams)))
-          .catch((e) => emit(factory.createLogEvent(this, level, 'promise failed', [ ...optionalParams, e])));
+        message.then((msg) => factory.createLogEvent(this, level, msg, optionalParams))
+          .catch((err) => factory.createLogEvent(this, level, '', err)) // our promise failed
+          .then((event) => emit(event))
+          .catch((err) => {throw err;}); // something went wrong with sinking
+      } else {
+        emit(factory.createLogEvent(this, level, message, optionalParams));
       }
-      emit(factory.createLogEvent(this, level, message, optionalParams));
     };
 
     this.trace = function trace(messageOrGetMessage: unknown, ...optionalParams: unknown[]): void {
