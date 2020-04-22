@@ -504,47 +504,54 @@ export class DefaultLogger implements ILogger {
     const sinksLen = sinks.length;
     let i = 0;
 
-    const emit = (level: LogLevel, msgOrGetMsg: unknown, optionalParams: unknown[]): void => {
-      const message = typeof msgOrGetMsg === 'function' ? msgOrGetMsg() : msgOrGetMsg;
-      const event = factory.createLogEvent(this, level, message, optionalParams);
+    const emit = (event: ILogEvent) => {
       for (i = 0; i < sinksLen; ++i) {
         sinks[i].emit(event);
       }
     };
 
+    const log = (level: LogLevel, msgOrGetMsg: unknown, optionalParams: unknown[]): void => {
+      const message = typeof msgOrGetMsg === 'function' ? msgOrGetMsg() : msgOrGetMsg;
+      if (message instanceof Promise) {
+        message.then((msg) => emit(factory.createLogEvent(this, level, msg, optionalParams)))
+          .catch((e) => emit(factory.createLogEvent(this, level, 'promise failed', [ ...optionalParams, e])));
+      }
+      emit(factory.createLogEvent(this, level, message, optionalParams));
+    };
+
     this.trace = function trace(messageOrGetMessage: unknown, ...optionalParams: unknown[]): void {
       if (config.level <= LogLevel.trace) {
-        emit(LogLevel.trace, messageOrGetMessage, optionalParams);
+        log(LogLevel.trace, messageOrGetMessage, optionalParams);
       }
     };
 
     this.debug = function debug(messageOrGetMessage: unknown, ...optionalParams: unknown[]): void {
       if (config.level <= LogLevel.debug) {
-        emit(LogLevel.debug, messageOrGetMessage, optionalParams);
+        log(LogLevel.debug, messageOrGetMessage, optionalParams);
       }
     };
 
     this.info = function info(messageOrGetMessage: unknown, ...optionalParams: unknown[]): void {
       if (config.level <= LogLevel.info) {
-        emit(LogLevel.info, messageOrGetMessage, optionalParams);
+        log(LogLevel.info, messageOrGetMessage, optionalParams);
       }
     };
 
     this.warn = function warn(messageOrGetMessage: unknown, ...optionalParams: unknown[]): void {
       if (config.level <= LogLevel.warn) {
-        emit(LogLevel.warn, messageOrGetMessage, optionalParams);
+        log(LogLevel.warn, messageOrGetMessage, optionalParams);
       }
     };
 
     this.error = function error(messageOrGetMessage: unknown, ...optionalParams: unknown[]): void {
       if (config.level <= LogLevel.error) {
-        emit(LogLevel.error, messageOrGetMessage, optionalParams);
+        log(LogLevel.error, messageOrGetMessage, optionalParams);
       }
     };
 
     this.fatal = function fatal(messageOrGetMessage: unknown, ...optionalParams: unknown[]): void {
       if (config.level <= LogLevel.fatal) {
-        emit(LogLevel.fatal, messageOrGetMessage, optionalParams);
+        log(LogLevel.fatal, messageOrGetMessage, optionalParams);
       }
     };
   }

@@ -1,11 +1,4 @@
-import {
-  IConsoleLike,
-  LoggerConfiguration,
-  DI,
-  ILogger,
-  LogLevel,
-  ColorOptions,
-} from '@aurelia/kernel';
+import { ColorOptions, DI, IConsoleLike, ILogger, LoggerConfiguration, LogLevel } from '@aurelia/kernel';
 import { assert, eachCartesianJoin } from '@aurelia/testing';
 
 class ConsoleMock implements IConsoleLike {
