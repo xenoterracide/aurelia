@@ -188,6 +188,7 @@ describe('Logger', function () {
         private readonly level: [LogLevel, string, string, string],
         private readonly args: unknown[],
         private readonly done: Done) {
+        setTimeout(done, 1000);
       }
       public readonly calls: [keyof ConsoleMock, unknown[]][] = [];
 
@@ -196,7 +197,7 @@ describe('Logger', function () {
 
         assert.strictEqual(method, this.level[2], `method`);
         assert.match(message, new RegExp(`${timestampRE} \\[${this.level[3]}\\] test`));
-        assert.deepStrictEqual(args, this.args);
+        assert.deepStrictEqual(args, [this.args]);
         this.done();
       }
 
@@ -218,6 +219,7 @@ describe('Logger', function () {
     for (const level of levels) {
       if (level[0] === LogLevel.none) continue;
       describe('resolve', function () {
+
         // eslint-disable-next-line mocha/handle-done-callback
         it(`level=${level[1]} no params`, function (done: Done) {
           const {sut} = createFixture(new AsyncConsoleMock(level, [], done), level[0], ColorOptions.noColors, []);
