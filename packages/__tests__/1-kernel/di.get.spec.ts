@@ -9,6 +9,30 @@ describe('DI.get', function () {
     container = DI.createContainer();
   });
 
+  describe('interface', function () {
+    describe('child', function () {
+      let child = DI.createContainer();
+      // eslint-disable-next-line mocha/no-hooks
+      beforeEach(function () {
+        child = DI.createContainer();
+      });
+
+      it('leaf', function () {
+        type Foo = string;
+        interface Bar { }
+        function bar(handler: IContainer) {
+          return handler.get(Foo);
+        }
+        const Foo = DI.createInterface<Foo>('Foo').noDefault();
+        const Bar = DI.createInterface<Bar>('Bar').withDefault(b => b.callback(bar));
+
+        child.register(Registration.instance(Foo, 'hello'));
+
+        assert.strictEqual(child.get(Bar), 'hello');
+      });
+    });
+  });
+
   describe('@lazy', function () {
     class Bar {
 
