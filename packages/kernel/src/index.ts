@@ -28,6 +28,8 @@ export {
   DefaultContainerConfiguration,
   DefaultResolver,
   IContainerConfiguration,
+  IContainerDomainProbe,
+  ContainerTracerDomainProbe,
 } from './di';
 export {
   Class,
