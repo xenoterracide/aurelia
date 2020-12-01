@@ -308,7 +308,7 @@ export const DI = {
    *
    * - @param friendlyName used to improve error messaging
    */
-  createInterface<K extends Key>(configureOrName?: (builder: ResolverBuilder<K> | string) => IResolver<K>, configuror?: (builder: ResolverBuilder<K>) => IResolver<K>): InterfaceSymbol<K> {
+  createInterface<K extends Key>(configureOrName?: string | ((builder: ResolverBuilder<K>) => IResolver<K>), configuror?: (builder: ResolverBuilder<K>) => IResolver<K>): InterfaceSymbol<K> {
     const configure = typeof configureOrName === 'function' ? configureOrName : configuror;
     const friendlyName = typeof configureOrName === 'string' ? configureOrName : undefined;
 
