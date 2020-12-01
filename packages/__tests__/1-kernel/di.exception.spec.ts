@@ -23,7 +23,7 @@ describe('Exception', function () {
     interface IFoo {
       parent: IFoo | null;
     }
-    const IFoo = DI.createInterface<IFoo>('IFoo').withDefault(x => x.singleton(Foo));
+    const IFoo = DI.createInterface<IFoo>('IFoo', x => x.singleton(Foo));
     class Foo {
       public constructor(
         @optional(IFoo) public parent: IFoo,

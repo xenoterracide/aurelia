@@ -85,14 +85,13 @@ describe('DI.createInterface() -> container.get()', function () {
   beforeEach(function () {
     callbackCount = 0;
     container = DI.createContainer();
-    ITransient = DI.createInterface<ITransient>('ITransient').withDefault(x => x.transient(Transient));
-    ISingleton = DI.createInterface<ISingleton>('ISingleton').withDefault(x => x.singleton(Singleton));
+    ITransient = DI.createInterface<ITransient>('ITransient', x => x.transient(Transient));
+    ISingleton = DI.createInterface<ISingleton>('ISingleton', x => x.singleton(Singleton));
     instance = new Instance();
-    IInstance = DI.createInterface<IInstance>('IInstance').withDefault(x => x.instance(instance));
+    IInstance = DI.createInterface<IInstance>('IInstance', x => x.instance(instance));
     callback = createSpy(() => new Callback());
-    ICallback = DI.createInterface<ICallback>('ICallback').withDefault(x => x.callback(callback));
-    ICachedCallback = DI.createInterface<ICachedCallback>('ICachedCallback')
-      .withDefault(builder => builder.cachedCallback(callbackToCache));
+    ICallback = DI.createInterface<ICallback>('ICallback', x => x.callback(callback));
+    ICachedCallback = DI.createInterface<ICachedCallback>('ICachedCallback', x => x.cachedCallback(callbackToCache));
     get = createSpy(container, 'get', true);
   });
 
