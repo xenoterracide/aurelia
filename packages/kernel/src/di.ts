@@ -123,9 +123,6 @@ export type Resolved<K> = (
 
 export type Injectable<T = {}> = Constructable<T> & { inject?: Key[] };
 
-type InternalDefaultableInterfaceSymbol<K> = Partial<IRegistration<K> & InterfaceSymbol<K> & {
-  friendlyName: string; $isInterface: true;}>;
-
 function cloneArrayWithPossibleProps<T>(source: readonly T[]): T[] {
   const clone = source.slice();
   const keys = Object.keys(source);
@@ -312,7 +309,7 @@ export const DI = {
    * - @param friendlyName used to improve error messaging
    */
   createInterface<K extends Key>(friendlyName?: string, configure?: (builder: ResolverBuilder<K>) => IResolver<K>): InterfaceSymbol<K> {
-    const Interface: InternalDefaultableInterfaceSymbol<K> = function (target: Injectable<K>, property: string, index: number): void {
+    const Interface = function (target: Injectable<K>, property: string, index: number): void {
       if (target == null || new.target !== undefined) {
         throw new Error(`No registration for interface: '${Interface.friendlyName}'`); // TODO: add error (trying to resolve an InterfaceSymbol that has no registrations)
       }
@@ -424,7 +421,7 @@ export const DI = {
   },
 };
 
-export const IContainer = DI.createInterface<IContainer>('IContainer').noDefault();
+export const IContainer = DI.createInterface<IContainer>('IContainer');
 export const IServiceLocator = IContainer as unknown as InterfaceSymbol<IServiceLocator>;
 
 function createResolver(getter: (key: any, handler: IContainer, requestor: IContainer) => any): (key: any) => any {
