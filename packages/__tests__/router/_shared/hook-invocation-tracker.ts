@@ -90,7 +90,7 @@ export class HIAConfig {
   ) {}
 }
 
-export const IHookInvocationAggregator = DI.createInterface<IHookInvocationAggregator>('IHookInvocationAggregator').withDefault(x => x.singleton(HookInvocationAggregator));
+export const IHookInvocationAggregator = DI.createInterface<IHookInvocationAggregator>('IHookInvocationAggregator', x => x.singleton(HookInvocationAggregator));
 export interface IHookInvocationAggregator extends HookInvocationAggregator {}
 export class HookInvocationAggregator {
   public readonly notifyHistory: string[] = [];
