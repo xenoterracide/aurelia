@@ -131,7 +131,7 @@ export type ViewSelector = (object: ICustomElementViewModel, views: readonly Par
 export type ComposableObjectComponentType<T extends ICustomElementViewModel>
   = ConstructableClass<{ viewModel: T } & ICustomElementViewModel>;
 
-export const IViewLocator = DI.createInterface<IViewLocator>('IViewLocator', (x => x.singleton(ViewLocator));
+export const IViewLocator = DI.createInterface<IViewLocator>('IViewLocator', x => x.singleton(ViewLocator));
 export interface IViewLocator extends ViewLocator {}
 
 export class ViewLocator {
