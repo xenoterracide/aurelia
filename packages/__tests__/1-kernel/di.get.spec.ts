@@ -146,7 +146,7 @@ describe('DI.get', function () {
     });
 
     it('interface with default', function () {
-      const Strings = DI.createInterface<string[]>(x => x.instance([]);
+      const Strings = DI.createInterface<string[]>(x => x.instance([]));
       class Foo {
         public constructor(@optional(Strings) public readonly test: string[]) {}
       }
