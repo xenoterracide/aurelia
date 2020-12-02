@@ -81,7 +81,7 @@ export class HookInvocationTracker {
   }
 }
 
-export const IHIAConfig = DI.createInterface<IHIAConfig>('IHIAConfig').noDefault();
+export const IHIAConfig = DI.createInterface<IHIAConfig>('IHIAConfig');
 export interface IHIAConfig extends HIAConfig {}
 export class HIAConfig {
   public constructor(

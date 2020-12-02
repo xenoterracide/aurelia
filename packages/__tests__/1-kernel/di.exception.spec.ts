@@ -7,7 +7,7 @@ describe('Exception', function () {
 
     interface Foo {}
 
-    const Foo = DI.createInterface<Foo>('Foo').noDefault();
+    const Foo = DI.createInterface<Foo>('Foo');
 
     class Bar {
       public constructor(@Foo public readonly foo: Foo) {}

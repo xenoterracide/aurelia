@@ -1776,7 +1776,7 @@ class Notifier {
   }
 }
 
-const INotifierConfig = DI.createInterface<INotifierConfig>('INotifierConfig').noDefault();
+const INotifierConfig = DI.createInterface<INotifierConfig>('INotifierConfig');
 interface INotifierConfig extends NotifierConfig {}
 class NotifierConfig {
   public constructor(
