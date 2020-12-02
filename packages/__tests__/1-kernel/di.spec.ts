@@ -1,7 +1,5 @@
 import {
   DI,
-  IContainer,
-  IDefaultableInterfaceSymbol,
   inject,
   Registration,
   singleton,
